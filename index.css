@@ -9,9 +9,7 @@ p,li {
     font-family: 'Fira Sans', sans-serif;
 }
 
-div.container {
-    text-align: center;
-}
+
 
 /* Special class on .container surrounding .navbar, used for positioning it into place. */
 .navbar-wrapper {
@@ -36,4 +34,18 @@ div.container {
   }
 nav{
     font-weight: bold;
+}
+.tooltip{
+  position: absolute;
+  background-color: black;
+  color:white;
+  border: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  width: 250px;
+  height: 60px;
+  font-size: 90%;
+  display:flex;
+  align-items:center;
+  overflow-x:auto;
 }
