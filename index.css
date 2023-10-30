@@ -9,7 +9,9 @@ p,li {
     font-family: 'Fira Sans', sans-serif;
 }
 
-
+#Graph1{
+  background-color: #e2e2e2;
+}
 
 /* Special class on .container surrounding .navbar, used for positioning it into place. */
 .navbar-wrapper {
@@ -34,7 +36,7 @@ p,li {
   }
 nav{
     font-weight: bold;
-}
+ }/*
 .tooltip{
   position: absolute;
   background-color: black;
@@ -42,10 +44,10 @@ nav{
   border: solid;
   border-width: 1px;
   border-radius: 5px;
-  width: 250px;
-  height: 60px;
+  width: 350px;
+  height: 80px;
   font-size: 90%;
   display:flex;
   align-items:center;
   overflow-x:auto;
-}
+} */
