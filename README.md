@@ -13,6 +13,6 @@ This repository will host the codebase for the Data Visualization assignments.
   <ol>
     <li>Open command prompt.</li>
     <li>Navigate to the repository directory you cloned.</li>
-    <li>Run <b>live-server<b> command which will open the index.html file in your browser.</li>
+    <li>Run <b>live-server</b> command which will open the index.html file in your browser.</li>
   </ol>
 </ol>
