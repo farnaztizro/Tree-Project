@@ -21,13 +21,13 @@ $("#citySelect").on('change', function(){
 });
 function CreateGraph(cityName) {
   const selectedCity = cityName;
-  
+
   d3.select("#visualization1").select("svg").remove();
   d3.json("tree_data.json").then(function(data) {
     const cityData = data[selectedCity];
-    // Sort the data by count 
+    // Sort the data by count
     cityData.sort((a, b) => b.count - a.count);
-    
+
     const margin = { top: 40, right: 40, bottom: 60, left: 150 };
     const width = 1250 - margin.left - margin.right;
     const height = 2500 - margin.top - margin.bottom;
@@ -37,11 +37,11 @@ function CreateGraph(cityName) {
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
-    
+
     const xScale = d3.scaleLinear()
         .domain([0, d3.max(cityData, d => d.count)])
         .range([0, width]);
-    
+
     const yScale = d3.scaleBand()
         .domain(cityData.map(d => d.scientific_name))
         .range([0, height])
@@ -69,8 +69,8 @@ function CreateGraph(cityName) {
         .attr("class", "bar")
         .attr("x", 0)
         .attr("y", d => yScale(d.scientific_name))
-        .attr("width", d => xScale(d.count))
-        .attr("height", yScale.bandwidth())
+         .attr("width", d => xScale(d.count))
+        .attr("height", yScale.bandwidth()/1.5)
         .attr("fill", "steelblue")
         .on('mouseover',function (d,i)  {
             d3.select(this)
@@ -81,7 +81,7 @@ function CreateGraph(cityName) {
             .style("top", (d.pageY - 40) + "px");
         })
         .on('mousemove',function (d,i)  {
-            
+
             tooltip.transition().duration(200).style('opacity', 0.9);
             tooltip.html(`&nbspAbundance: ${i.count}<br/>&nbspCommon Name(s): ${i.common_name}`)
             .style("left", (d.pageX + 10) + "px")
@@ -91,41 +91,42 @@ function CreateGraph(cityName) {
           d3.select(this)
              .attr("fill", "steelblue");
           tooltip.transition().duration(500).style('opacity', 0);
-        }); 
+        });
 
     svg.append("g")
-        
+
         .style("font-family","Fira Sans")
         .attr("class", "x-axis")
         .call(d3.axisBottom(xScale))
         .attr("transform", `translate(0, ${height})`);
-    
+
     svg.append("g")
         .style("font-family","Fira Sans")
         .attr("class", "y-axis")
         .call(d3.axisLeft(yScale));
-    
+
     svg.append("text")
         .attr("class", "label")
         .attr("x", width / 2)
         .attr("y", height + margin.bottom - 10)
         .style("text-anchor", "middle")
         .text("Count");
-    
+
     svg.append("text")
         .attr("class", "title")
         .attr("x", width / 2)
         .attr("y", -margin.top / 2)
         .style("text-anchor", "middle")
         .text(`Tree Data for ${selectedCity}`);
-});
+
+    });
 }
 function CreateHeatMap(){
     // set the dimensions and margins of the graph
     var margin = {top: 80, right: 50, bottom: 30, left: 200},
     width = 1000 - margin.left - margin.right,
     height = 700 - margin.top - margin.bottom;
-
+    
     // append the svg object to the body of the page
     var svg = d3.select("#heatmap")
     .append("svg")
@@ -141,6 +142,11 @@ function CreateHeatMap(){
     // Labels of row and columns -> unique identifier of the column called 'city' and 'scientific_name'
     const myGroups = Array.from(new Set(data.map(d => d.city)))
     const myVars = Array.from(new Set(data.map(d => d.scientific_name)))
+    const maxCount = d3.max(data, d => +d.count);
+
+    const logScale = d3.scaleLog()
+    .domain([1, maxCount])
+    .range([0, 1]);
 
     // Build X scales and axis:
     const x = d3.scaleBand()
@@ -166,9 +172,12 @@ function CreateHeatMap(){
     .select(".domain").remove()
 
     // Build color scale
-    const myColor = d3.scaleSequential()
-    .interpolator(d3.interpolateInferno)
-    .domain([1,3000])
+    // const myColor = d3.scaleSequential()
+    // .interpolator(d3.interpolateInferno)
+    // .domain([1,maxCount])
+    const myColor = function(count) {
+        return d3.interpolateInferno(logScale(count));
+      };
 
     // create a tooltip
     const tooltip =d3.select('body').select("#heatmap")
@@ -186,7 +195,7 @@ function CreateHeatMap(){
     // Three function that change the tooltip when user hover / move / leave a cell
 
     const mouseover = function(event,d) {
-    
+
     tooltip
     .html("The exact value of<br>this cell is: " + d.count)
     .style("left", (event.pageX + 10) + "px")
@@ -228,6 +237,42 @@ function CreateHeatMap(){
     .on("mouseover", mouseover)
     .on("mousemove", mousemove)
     .on("mouseleave", mouseleave);
+    const gradient = svg.append("defs").append("linearGradient")
+        .attr("id", "heatmap-gradient")
+        .attr("x1", "0%")
+        .attr("x2", "0%")
+        .attr("y1", "0%")
+        .attr("y2", "100%");
+
+        gradient.append("stop")
+        .attr("offset", "0%")
+        .style("stop-color", myColor(1)); // Start color
+
+        gradient.append("stop")
+        .attr("offset", "100%")
+        .style("stop-color", myColor(maxCount)); // End color
+    // Add a legend
+    const legend = svg.append("g")
+      .attr("class", "legend")
+      .attr("transform", `translate(${width + 20}, 0)`);
+
+    const legendScale = d3.scaleLinear()
+      .domain([1, maxCount])
+      .range([0, 200]);
+
+    legend.append("rect")
+      .attr("width", 20)
+      .attr("height", 200)
+      .style("fill", "url(#heatmap-gradient)");
+
+    const legendAxis = d3.axisRight(legendScale)
+      .tickFormat(d3.format("d"))
+      .ticks(5);
+
+    legend.append("g")
+      .attr("transform", "translate(20, 0)")
+      .call(legendAxis);
+    
     })
 
     // Add title to graph
